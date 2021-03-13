@@ -1,4 +1,4 @@
-const FileCache = require('../src/cache')
+const FileCache = require('../src/file-cache')
 const fs = require('fs')
 const os = require('os')
 const path = require('path')
