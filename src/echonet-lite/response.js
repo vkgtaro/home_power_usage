@@ -8,7 +8,7 @@ class EconetLiteResponse {
     this.deoj = this.edata.slice(3, 6)
     this.esv = this.edata.slice(6, 7)
     this.opc = this.edata.slice(7, 8)
-    this.propaties = this.edata.slice(8)
+    this.properties = this.edata.slice(8)
   }
 
   get_operation_property_count() {
@@ -21,11 +21,11 @@ class EconetLiteResponse {
     let offset = 0;
     for (let i = 0; i < opc; i++) {
       const row = {}
-      row.epc = this.propaties.slice(offset, offset+1)
+      row.epc = this.properties.slice(offset, offset+1)
       offset++
-      row.pdc = this.propaties.slice(offset, offset+1).readUInt8()
+      row.pdc = this.properties.slice(offset, offset+1).readUInt8()
       offset++
-      row.edt = this.propaties.slice(offset, offset+row.pdc)
+      row.edt = this.properties.slice(offset, offset+row.pdc)
 
       offset = offset + row.pdc
       result.push(row)
