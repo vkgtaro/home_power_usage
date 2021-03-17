@@ -33,7 +33,7 @@ test('get_properties', () => {
   const buf = Buffer.from('1081000302880105FF017201E704FFFFF856', 'hex')
   const res = new EchonetLiteResponse(buf)
   expect(res.get_properties()).toEqual([{
-    epc: Buffer.from('E7', 'hex'),
+    epc: 'E7',
     pdc: 4,
     edt: Buffer.from('FFFFF856', 'hex')
   }])
@@ -42,11 +42,11 @@ test('get_properties', () => {
   const buf_double = Buffer.from('1081000302880105FF017202E704FFFFF856E703FFF856', 'hex')
   const res_double = new EchonetLiteResponse(buf_double)
   expect(res_double.get_properties()).toEqual([{
-    epc: Buffer.from('E7', 'hex'),
+    epc: 'E7',
     pdc: 4,
     edt: Buffer.from('FFFFF856', 'hex')
   }, {
-    epc: Buffer.from('E7', 'hex'),
+    epc: 'E7',
     pdc: 3,
     edt: Buffer.from('FFF856', 'hex')
   }])
@@ -71,6 +71,13 @@ test('get_property_parser', () => {
   // SEE ALSO ./property-parser/02-88-E7.test.js
   // There is same test.
   expect(parser(Buffer.from('FFFFF78F','hex'))).toBe(-2161)
+})
+
+test('get_parsed_properties', () => {
+  const buf = Buffer.from('1081000302880105FF017201E704FFFFF856', 'hex')
+  const res = new EchonetLiteResponse(buf)
+
+  expect(res.get_parsed_properties()).toEqual([-1962])
 })
 
 

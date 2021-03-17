@@ -21,7 +21,7 @@ class EconetLiteResponse {
     let offset = 0;
     for (let i = 0; i < opc; i++) {
       const row = {}
-      row.epc = this.properties.slice(offset, offset+1)
+      row.epc = this.properties.slice(offset, offset+1).toString('hex').toUpperCase()
       offset++
       row.pdc = this.properties.slice(offset, offset+1).readUInt8()
       offset++
@@ -46,6 +46,17 @@ class EconetLiteResponse {
     const op_name = this.get_object_property_name(epc_buf)
     const parser = require(`./property-parser/${op_name}`)
     return parser
+  }
+
+  get_parsed_properties() {
+    const properties = this.get_properties()
+    const result = []
+    properties.forEach((property) => {
+      const parser = this.get_property_parser(property.epc)
+      result.push(parser(property.edt))
+    })
+
+    return result
   }
 
   convert_to_hex_array(buf) {
