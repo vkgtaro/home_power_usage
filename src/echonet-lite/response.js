@@ -15,7 +15,7 @@ class EconetLiteResponse {
     return this.opc.readUInt8()
   }
 
-  get_edt() {
+  get_properties() {
     const opc = this.get_operation_property_count()
     const result = []
     let offset = 0;

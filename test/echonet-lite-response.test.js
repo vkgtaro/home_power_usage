@@ -28,11 +28,11 @@ test('convert_to_hex_array', () => {
   expect(res.convert_to_hex_array(Buffer.from('1081', 'hex'))).toEqual([0x10, 0x81])
 })
 
-test('get_edt', () => {
+test('get_properties', () => {
   // OPC: 1, [PDC: 4]
   const buf = Buffer.from('1081000302880105FF017201E704FFFFF856', 'hex')
   const res = new EchonetLiteResponse(buf)
-  expect(res.get_edt()).toEqual([{
+  expect(res.get_properties()).toEqual([{
     epc: Buffer.from('E7', 'hex'),
     pdc: 4,
     edt: Buffer.from('FFFFF856', 'hex')
@@ -41,7 +41,7 @@ test('get_edt', () => {
   // OPC: 2, ['PDC: 4', 'PDC: 3']
   const buf_double = Buffer.from('1081000302880105FF017202E704FFFFF856E703FFF856', 'hex')
   const res_double = new EchonetLiteResponse(buf_double)
-  expect(res_double.get_edt()).toEqual([{
+  expect(res_double.get_properties()).toEqual([{
     epc: Buffer.from('E7', 'hex'),
     pdc: 4,
     edt: Buffer.from('FFFFF856', 'hex')
