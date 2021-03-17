@@ -65,7 +65,12 @@ test('get_property_parser', () => {
   const res = new EchonetLiteResponse(buf)
 
   const epc_buf = Buffer.from('E7', 'hex')
-  expect(res.get_property_parser(epc_buf)).toBeInstanceOf(Function)
+  const parser = res.get_property_parser(epc_buf)
+  expect(parser).toBeInstanceOf(Function)
+
+  // SEE ALSO ./property-parser/02-88-E7.test.js
+  // There is same test.
+  expect(parser(Buffer.from('FFFFF78F','hex'))).toBe(-2161)
 })
 
 
