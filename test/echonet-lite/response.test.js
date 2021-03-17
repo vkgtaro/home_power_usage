@@ -1,4 +1,4 @@
-const EchonetLiteResponse = require('../src/echonet-lite/response')
+const EchonetLiteResponse = require('../../src/echonet-lite/response')
 
 test('parse', () => {
   const buf = Buffer.from('1081000302880105FF017201E704FFFFF856', 'hex')
