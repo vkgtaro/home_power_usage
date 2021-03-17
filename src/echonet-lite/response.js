@@ -33,6 +33,21 @@ class EconetLiteResponse {
     return result
   }
 
+  // returns this format [group_class_code]-[class_code]-[EPC]
+  get_object_property_name(epc_buf) {
+    const code_array = this.seoj.toString('hex').match(/.{1,2}/g)
+    // using EPC code instead of SEOJ instance code
+    code_array[2] = epc_buf.toString('hex').toUpperCase()
+
+    return code_array.join('-')
+  }
+
+  get_property_parser(epc_buf) {
+    const op_name = this.get_object_property_name(epc_buf)
+    const parser = require(`./property-parser/${op_name}`)
+    return parser
+  }
+
   convert_to_hex_array(buf) {
     return buf.toString('hex').match(/.{1,2}/g).map(v => parseInt(v, 16))
   }

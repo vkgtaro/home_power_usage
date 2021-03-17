@@ -52,3 +52,21 @@ test('get_properties', () => {
   }])
 })
 
+test('get_object_property_name', () => {
+  const buf = Buffer.from('1081000302880105FF017201E704FFFFF856', 'hex')
+  const res = new EchonetLiteResponse(buf)
+
+  const epc_buf = Buffer.from('E7', 'hex')
+  expect(res.get_object_property_name(epc_buf)).toBe('02-88-E7')
+})
+
+test('get_property_parser', () => {
+  const buf = Buffer.from('1081000302880105FF017201E704FFFFF856', 'hex')
+  const res = new EchonetLiteResponse(buf)
+
+  const epc_buf = Buffer.from('E7', 'hex')
+  expect(res.get_property_parser(epc_buf)).toBeInstanceOf(Function)
+})
+
+
+
