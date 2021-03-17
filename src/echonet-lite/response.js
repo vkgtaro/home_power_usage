@@ -1,4 +1,6 @@
 class EconetLiteResponse {
+  property_parsers = {}
+
   constructor(buf) {
     this.buffer = buf
     this.ehd = buf.slice(0, 2)
@@ -44,6 +46,10 @@ class EconetLiteResponse {
 
   get_property_parser(epc_buf) {
     const op_name = this.get_object_property_name(epc_buf)
+    if (op_name in this.property_parsers) {
+      return this.property_parsers[op_name]
+    }
+
     const parser = require(`./property-parser/${op_name}`)
     return parser
   }

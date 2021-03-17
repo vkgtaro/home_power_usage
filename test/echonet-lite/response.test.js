@@ -78,6 +78,11 @@ test('get_parsed_properties', () => {
   const res = new EchonetLiteResponse(buf)
 
   expect(res.get_parsed_properties()).toEqual([-1962])
+
+  const buf_double = Buffer.from('1081000302880105FF017202E704FFFFF856E70400000783', 'hex')
+  const res_double = new EchonetLiteResponse(buf_double)
+
+  expect(res_double.get_parsed_properties()).toEqual([-1962, 1923])
 })
 
 
