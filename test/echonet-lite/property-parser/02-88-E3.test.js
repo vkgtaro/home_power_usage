@@ -1,4 +1,4 @@
-const parser = require('../../../src/echonet-lite/property-parser/02-88-E7.js')
+const parser = require('../../../src/echonet-lite/property-parser/02-88-E3.js')
 
 test('parse', () => {
   expect(parser(Buffer.from('0001D405', 'hex'))).toBe(119813)
