@@ -1,3 +1,16 @@
+const esv_properties = {
+  0x71: 'Set_Res',
+  0x72: 'Get_Res',
+  0x73: 'INFC',
+  0x74: 'INFC_Res',
+  0x7E: 'SetGet_Res',
+  0x50: 'SetI_SNA',
+  0x51: 'SetC_SNA',
+  0x52: 'GetC_SNA',
+  0x53: 'INF_SNA',
+  0x5E: 'SetGet_SNA',
+}
+
 class EconetLiteResponse {
   property_parsers = {}
 
@@ -63,6 +76,14 @@ class EconetLiteResponse {
     })
 
     return result
+  }
+
+  get_esv_property() {
+    const hex = this.esv.readUInt8()
+    if (hex in esv_properties) {
+      return esv_properties[hex]
+    }
+    return undefined
   }
 
   convert_to_hex_array(buf) {

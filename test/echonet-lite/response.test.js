@@ -1,5 +1,10 @@
 const EchonetLiteResponse = require('../../src/echonet-lite/response')
 
+const create_response = (hex) => {
+  const buf = Buffer.from(hex, 'hex')
+  return new EchonetLiteResponse(buf)
+}
+
 test('parse', () => {
   const buf = Buffer.from('1081000302880105FF017201E704FFFFF856', 'hex')
   const res = new EchonetLiteResponse(buf)
@@ -85,5 +90,25 @@ test('get_parsed_properties', () => {
   expect(res_double.get_parsed_properties()).toEqual([-1962, 1923])
 })
 
+test('get_esv_property', () => {
+  const expectations = {
+    '1081000302880105FF017101E704FFFFF856': 'Set_Res',
+    '1081000302880105FF017201E704FFFFF856': 'Get_Res',
+    '1081000302880105FF017301E704FFFFF856': 'INFC',
+    '1081000302880105FF017401E704FFFFF856': 'INFC_Res',
+    '1081000302880105FF017E01E704FFFFF856': 'SetGet_Res',
+    '1081000302880105FF015001E704FFFFF856': 'SetI_SNA',
+    '1081000302880105FF015101E704FFFFF856': 'SetC_SNA',
+    '1081000302880105FF015201E704FFFFF856': 'GetC_SNA',
+    '1081000302880105FF015301E704FFFFF856': 'INF_SNA',
+    '1081000302880105FF015E01E704FFFFF856': 'SetGet_SNA',
+    '1081000302880105FF015E01E704FFFFF856': 'SetGet_SNA',
+  }
 
+  for (const hex in expectations) {
+    const res = create_response(hex)
+    expect(res.get_esv_property()).toBe(expectations[hex])
+  }
+
+})
 
