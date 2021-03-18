@@ -18,13 +18,15 @@ test('parse', () => {
 })
 
 test('get_operation_property_count', () => {
-  const min_buf = Buffer.from('1081000302880105FF017201E704FFFFF856', 'hex')
-  const min_res = new EchonetLiteResponse(min_buf)
-  expect(min_res.get_operation_property_count()).toBe(1)
+  const expectations = {
+    '1081000302880105FF017201E704FFFFF856': 1,
+    '1081000302880105FF0172FFE704FFFFF856': 255,
+  }
 
-  const max_buf = Buffer.from('1081000302880105FF0172FFE704FFFFF856', 'hex')
-  const max_res = new EchonetLiteResponse(max_buf)
-  expect(max_res.get_operation_property_count()).toBe(255)
+  for (const hex in expectations) {
+    const res = create_response(hex)
+    expect(res.get_operation_property_count()).toBe(expectations[hex])
+  }
 })
 
 test('convert_to_hex_array', () => {
