@@ -25,6 +25,7 @@ class RL7023StickDIPS {
       this.callback(this.context, response.replace(/\r\n/, ''))
     })
   }
+
   set_ipv6_addr(addr) {
     this.ipv6_addr = addr
   }
@@ -50,6 +51,10 @@ class RL7023StickDIPS {
         }
       })
     })
+  }
+
+  close() {
+    this.port.close()
   }
 
   simple_response_callback(context, res) {

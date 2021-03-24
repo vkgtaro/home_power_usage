@@ -48,6 +48,7 @@ class FakeParser {
 class SerialPort {
   constructor() {
     this.fake_parser = new FakeParser()
+    this.close = jest.fn()
   }
   write(data) {
     this.fake_parser.tell(data)

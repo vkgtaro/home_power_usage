@@ -159,9 +159,10 @@ test('SKSENDTO', async () => {
   expect(await rl7023.sksendto(echonet_lite_request)).toEqual(Buffer.from('1081000302880105FF017201E704FFFFF856', 'hex'))
 })
 
-
-
-
+test('close', () => {
+  rl7023.close()
+  expect(rl7023.port.close).toHaveBeenCalled()
+})
 
 
 
