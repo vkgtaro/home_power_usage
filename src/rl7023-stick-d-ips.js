@@ -12,7 +12,6 @@ class RL7023StickDIPS {
     this.context = {
       resolve:  undefined,
       reject:   undefined,
-      callback: undefined,
     }
   }
 
@@ -23,18 +22,22 @@ class RL7023StickDIPS {
 
     this.parser = this.port.pipe(new Readline({ delimiter: '\r\n' }));
     this.parser.on('data', (response) => {
-      this.context.callback(response.trim('\r\n'), this.context.resolve, this.context.reject)
+      this.callback(this.context, response.replace(/\r\n/, ''))
     })
+  }
+  set_ipv6_addr(addr) {
+    this.ipv6_addr = addr
   }
 
   _set_context(callback, resolve, reject) {
     if (callback && typeof callback === 'function') {
-      this.context.callback = callback
+      this.callback = callback
     } else {
-      this.context.callback = this.simple_response_callback
+      this.callback = this.simple_response_callback
     }
     this.context.resolve = resolve
     this.context.reject  = reject
+
   }
 
   send(message, callback) {
@@ -49,41 +52,44 @@ class RL7023StickDIPS {
     })
   }
 
-  simple_response_callback(res, resolve, reject) {
+  simple_response_callback(context, res) {
     if (res.match(/(^|\r\n)OK/)) {
-      resolve(res)
+      context.resolve(res)
     } else {
-      reject(res)
+      context.reject(res)
     }
   }
 
-  pana_callback(res, resolve, reject) {
+  simple_get_response_callback(context, res) {
+    context.resolve(res.trim())
+  }
+
+  pana_callback(context, res) {
     if (res.match(/^EVENT 24/)) {
-      reject('PANA Connection Failed.')
+      context.reject('PANA Connection Failed.')
     } else if (res.match(/^EVENT 25/)) {
-      resolve('PANA Connected')
+      context.resolve('PANA Connected')
     }
   }
 
-  scan_callback(res, resolve, reject) {
+  scan_callback(context, res) {
     if (res.match(/^EVENT 20/)) {
-      this.device = {}
+      context.device = {}
     } else if (res.match(/^\s{2}/)) {
-      res.trim('\r\n')
       const m = res.match(/^\s+([^\:]+)\:(.+)/)
       if (m) {
-        this.device[m[1]] = m[2]
+        context.device[m[1]] = m[2]
       }
     } else if (res.match('EVENT 22')) {
-      if (this.device && Object.keys(this.device).length) {
-        resolve(this.device)
+      if (context.device && Object.keys(context.device).length) {
+        context.resolve(context.device)
       } else {
-        reject('Not found any deveices')
+        context.reject('Not found any deveices')
       }
     }
   }
 
-  erxudp_callback(res, resolve, reject) {
+  erxudp_callback(context, res) {
     // Ignore responses other than EXRUDP.
     if (!res.match(/ERXUDP/)) {
       return
@@ -91,15 +97,15 @@ class RL7023StickDIPS {
 
     // Accoding to SKSTACK-IP spec P49, 8th part is data
     // ERXUDP <SENDER> <DEST> <RPORT> <LPORT> <SENDERLLA> <SECURED> <DATALEN> <DATA><CRLF>
-    res.trim('\r\n')
+    res.trim()
     const erxudp_parts = res.split(' ')
     if (erxudp_parts.length != 9) {
-      reject('lack of response data')
+      context.reject('lack of response data')
       return
     }
 
     const data = erxudp_parts[8]
-    resolve(Buffer.from(data, 'hex'))
+    context.resolve(Buffer.from(data, 'hex'))
   }
 
   build_message(template, ...args) {
@@ -128,6 +134,18 @@ class RL7023StickDIPS {
 
   sksreg_pan_id(pan_id) {
     this.send(this.build_message('SKSREG S3 %s', pan_id))
+  }
+
+  async skscan() {
+    return await this.send(this.build_message('SKSCAN 2 FFFFFFFF 6'), this.scan_callback)
+  }
+
+  async skll64(addr) {
+    return await this.send(this.build_message('SKLL64 %s', addr), this.simple_get_response_callback)
+  }
+
+  async sksendto(el_req) {
+    return await this.send(this.build_sksendto_message(this.ipv6_addr, el_req), this.erxudp_callback)
   }
 }
 module.exports = RL7023StickDIPS
