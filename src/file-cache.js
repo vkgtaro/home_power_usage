@@ -9,7 +9,6 @@ class FileCache {
     this.ttl = ttl
 
     if (!fs.existsSync(this.tmp_dir)) {
-      console.log("creating"+this.tmp_dir)
       fs.mkdirSync(this.tmp_dir, (err, directory) => {
         if (err) throw err;
       })
