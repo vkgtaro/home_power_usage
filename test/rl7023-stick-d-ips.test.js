@@ -145,6 +145,12 @@ test('SKLL64', async () => {
   expect(await rl7023.skll64('001C640003DD6393')).toBe('FE80:0000:0000:0000:021C:6400:03DD:6393')
 })
 
+test('SKJOIN', async () => {
+  const ipv6_addr = 'FE80:0000:0000:0000:021C:6400:03DD:6393'
+  rl7023.set_ipv6_addr(ipv6_addr)
+  expect(await rl7023.skjoin()).toBe('PANA Connected')
+})
+
 test('SKSENDTO', async () => {
   const ipv6_addr = 'FE80:0000:0000:0000:021C:6400:03DD:6393'
   const echonet_lite_request = Buffer.from('1081000105FF010288016201E700', 'hex')

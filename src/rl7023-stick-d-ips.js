@@ -113,12 +113,12 @@ class RL7023StickDIPS {
     return Buffer.from(message + '\r\n', 'utf8')
   }
 
-   build_sksendto_message(addr, el_req) {
-     const byte_num_hex = el_req.length.toString(16).padStart(4, '0')
-     const cmd_base = util.format('SKSENDTO 1 %s 0E1A 2 %s ', addr, byte_num_hex)
-     const cmd_base_buf = Buffer.from(cmd_base)
-     return Buffer.concat([cmd_base_buf, el_req])
-   }
+  build_sksendto_message(addr, el_req) {
+    const byte_num_hex = el_req.length.toString(16).padStart(4, '0')
+    const cmd_base = util.format('SKSENDTO 1 %s 0E1A 2 %s ', addr, byte_num_hex)
+    const cmd_base_buf = Buffer.from(cmd_base)
+    return Buffer.concat([cmd_base_buf, el_req])
+  }
 
   sksetpwd(password) {
     this.send(this.build_message('SKSETPWD C %s', password))
@@ -142,6 +142,10 @@ class RL7023StickDIPS {
 
   async skll64(addr) {
     return await this.send(this.build_message('SKLL64 %s', addr), this.simple_get_response_callback)
+  }
+
+  async skjoin() {
+    return await this.send(this.build_message('SKJOIN %s', this.ipv6_addr), this.pana_callback)
   }
 
   async sksendto(el_req) {

@@ -12,6 +12,7 @@ const device_responses = [
 ];
 
 const ipv6_addr = 'FE80:0000:0000:0000:021C:6400:03DD:6393'
+const skjoin_response = 'EVENT 25 FE80:0000:0000:0000:021C:6400:03DD:6393'
 const echonet_lite_response = 'ERXUDP FE80:0000:0000:0000:021C:6400:03DD:6393 FE80:0000:0000:0000:1207:23FF:FEA0:77E3 0E1A 0E1A 001C640003DD6393 1 0012 1081000302880105FF017201E704FFFFF856'
 
 class FakeParser {
@@ -31,6 +32,8 @@ class FakeParser {
         })
       } else if (command.match(/SKLL64/)) {
         that.cb(ipv6_addr)
+      } else if (command.match(/SKJOIN/)) {
+        that.cb(skjoin_response)
       } else if (command.match(/SKSENDTO/)) {
         that.cb(echonet_lite_response)
       }
