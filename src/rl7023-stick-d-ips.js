@@ -1,10 +1,11 @@
+const util = require('util')
 const SerialPort = require('serialport')
 const Readline = require('@serialport/parser-readline')
 const baud_rate = 115200
 
 class RL7023StickDIPS {
-  constructor(device) {
-    this.device = device
+  constructor(device_path) {
+    this.device_path = device_path
     this._prepare_serialport()
 
     // The following three functions should be handled as a set in the same context
@@ -16,7 +17,7 @@ class RL7023StickDIPS {
   }
 
   _prepare_serialport() {
-    this.port = new SerialPort(this.device, {
+    this.port = new SerialPort(this.device_path, {
       baudRate: baud_rate
     })
 
@@ -99,6 +100,34 @@ class RL7023StickDIPS {
 
     const data = erxudp_parts[8]
     resolve(Buffer.from(data, 'hex'))
+  }
+
+  build_message(template, ...args) {
+    const message = (args.length > 0) ? util.format(template, ...args) : template
+    return Buffer.from(message + '\r\n', 'utf8')
+  }
+
+   build_sksendto_message(addr, el_req) {
+     const byte_num_hex = el_req.length.toString(16).padStart(4, '0')
+     const cmd_base = util.format('SKSENDTO 1 %s 0E1A 2 %s ', addr, byte_num_hex)
+     const cmd_base_buf = Buffer.from(cmd_base)
+     return Buffer.concat([cmd_base_buf, el_req])
+   }
+
+  sksetpwd(password) {
+    this.send(this.build_message('SKSETPWD C %s', password))
+  }
+
+  sksetrbid(id) {
+    this.send(this.build_message('SKSETRBID %s', id))
+  }
+
+  sksreg_channel(channel) {
+    this.send(this.build_message('SKSREG S2 %s', channel))
+  }
+
+  sksreg_pan_id(pan_id) {
+    this.send(this.build_message('SKSREG S3 %s', pan_id))
   }
 }
 module.exports = RL7023StickDIPS
