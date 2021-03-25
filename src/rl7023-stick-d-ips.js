@@ -1,4 +1,5 @@
 const util = require('util')
+const debug = require('debug')('rl7023')
 const EchonetLiteRequest = require('./echonet-lite/request')
 const EchonetLiteResponse = require('./echonet-lite/response')
 const SerialPort = require('serialport')
@@ -27,6 +28,7 @@ class RL7023StickDIPS {
 
     this.parser = this.port.pipe(new Readline({ delimiter: '\r\n' }));
     this.parser.on('data', (response) => {
+      debug(response)
       this.callback(this.context, response.replace(/\r\n/, ''))
     })
   }
