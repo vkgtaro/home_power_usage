@@ -1,4 +1,5 @@
 const RL7023StickDIPS = require('../src/rl7023-stick-d-ips')
+const EchonetLiteResponse = require('../src/echonet-lite/response')
 
 // const SerialPort = require('@serialport/stream')
 // const MockBinding = require('@serialport/binding-mock')
@@ -157,6 +158,12 @@ test('SKSENDTO', async () => {
 
   rl7023.set_ipv6_addr(ipv6_addr)
   expect(await rl7023.sksendto(echonet_lite_request)).toEqual(Buffer.from('1081000302880105FF017201E704FFFFF856', 'hex'))
+})
+
+test('requesst_echonet_lite', async () => {
+  const expect_response = new EchonetLiteResponse(Buffer.from('1081000302880105FF017201E704FFFFF856', 'hex'))
+  expect(await rl7023.request_echonet_lite('Get', [{epc: 0xE7}]))
+    .toEqual(expect_response)
 })
 
 test('close', () => {

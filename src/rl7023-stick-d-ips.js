@@ -1,9 +1,14 @@
 const util = require('util')
+const EchonetLiteRequest = require('./echonet-lite/request')
+const EchonetLiteResponse = require('./echonet-lite/response')
 const SerialPort = require('serialport')
 const Readline = require('@serialport/parser-readline')
 const baud_rate = 115200
+const smart_meter_eoj = '028801'
 
 class RL7023StickDIPS {
+  tid = 0
+
   constructor(device_path) {
     this.device_path = device_path
     this._prepare_serialport()
@@ -156,5 +161,38 @@ class RL7023StickDIPS {
   async sksendto(el_req) {
     return await this.send(this.build_sksendto_message(this.ipv6_addr, el_req), this.erxudp_callback)
   }
+
+  async request_echonet_lite(esv, content) {
+    this.tid++
+    const req = new EchonetLiteRequest(this.tid, smart_meter_eoj, esv)
+    req.set_request_content(content)
+    const raw_res = await this.sksendto(req.get_buf())
+    const res = new EchonetLiteResponse(raw_res)
+    if (res.get_esv_property().match(/Set_Res|Get_Res|SetGet_Res/)) {
+      return res
+    }
+
+    throw 'Failed to get.'
+  }
 }
 module.exports = RL7023StickDIPS
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
