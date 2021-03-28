@@ -25,7 +25,7 @@ class FakeParser {
 
       const command = data.toString()
       if (command.match(/^SK(SETPWD|SETRBID|SREG)/)) {
-        return
+        that.cb('OK')
       } else if (command.match(/^SKSCAN/)) {
         device_responses.forEach((res) => {
           that.cb(res)

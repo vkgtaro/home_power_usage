@@ -125,6 +125,7 @@ test('response timeout', async () => {
   }
   rl7023.time_limit = 500
 
+  // will clearTimeout when resolved
   rl7023._set_context(callback, resolve, reject)
   rl7023.context.resolve()
   expect(resolve).toHaveBeenCalled()
@@ -134,6 +135,17 @@ test('response timeout', async () => {
   resolve.mockClear()
   reject.mockClear()
 
+  // will clearTimeout when rejected, also
+  rl7023._set_context(callback, resolve, reject)
+  rl7023.context.reject()
+  expect(reject).toHaveBeenCalled()
+  await sleep(1000)
+  expect(resolve).not.toHaveBeenCalled()
+
+  resolve.mockClear()
+  reject.mockClear()
+
+  // will timeout if it's not resolved or rejected
   rl7023._set_context(callback, resolve, reject)
   await sleep(1000)
   expect(resolve).not.toHaveBeenCalled()

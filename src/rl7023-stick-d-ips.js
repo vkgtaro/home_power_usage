@@ -9,7 +9,7 @@ const smart_meter_eoj = '028801'
 
 class RL7023StickDIPS {
   tid = 0
-  time_limit = 10*1000
+  time_limit = 30*1000
 
   constructor(device_path) {
     this.device_path = device_path
@@ -38,26 +38,29 @@ class RL7023StickDIPS {
     this.ipv6_addr = addr
   }
 
-  _set_context(callback, resolve, reject) {
+  _set_context(callback, resolve, reject, message) {
     if (callback && typeof callback === 'function') {
       this.callback = callback
     } else {
       this.callback = this.simple_response_callback
     }
     const timer = setTimeout(() => {
-      reject('Response timeout')
+      reject('Response timeout:' + message)
     }, this.time_limit)
 
     this.context.resolve = (content) => {
       clearTimeout(timer)
       resolve(content)
     }
-    this.context.reject  = reject
+    this.context.reject  = (content) => {
+      clearTimeout(timer)
+      reject(content)
+    }
   }
 
   send(message, callback) {
     return new Promise((resolve, reject) => {
-      this._set_context(callback, resolve, reject)
+      this._set_context(callback, resolve, reject, message)
 
       this.port.write(message, (err) => {
         if (err) {
@@ -72,7 +75,7 @@ class RL7023StickDIPS {
   }
 
   simple_response_callback(context, res) {
-    if (res.match(/(^|\r\n)OK/)) {
+    if (res.match(/^OK/)) {
       context.resolve(res)
     } else {
       context.reject(res)
@@ -139,20 +142,20 @@ class RL7023StickDIPS {
     return Buffer.concat([cmd_base_buf, el_req])
   }
 
-  sksetpwd(password) {
-    this.send(this.build_message('SKSETPWD C %s', password))
+  async sksetpwd(password) {
+    await this.send(this.build_message('SKSETPWD C %s', password))
   }
 
-  sksetrbid(id) {
-    this.send(this.build_message('SKSETRBID %s', id))
+  async sksetrbid(id) {
+    await this.send(this.build_message('SKSETRBID %s', id))
   }
 
-  sksreg_channel(channel) {
-    this.send(this.build_message('SKSREG S2 %s', channel))
+  async sksreg_channel(channel) {
+    await this.send(this.build_message('SKSREG S2 %s', channel))
   }
 
-  sksreg_pan_id(pan_id) {
-    this.send(this.build_message('SKSREG S3 %s', pan_id))
+  async sksreg_pan_id(pan_id) {
+    await this.send(this.build_message('SKSREG S3 %s', pan_id))
   }
 
   async skscan() {
