@@ -35,6 +35,16 @@ test('convert_to_hex_array', () => {
   expect(res.convert_to_hex_array(Buffer.from('1081', 'hex'))).toEqual([0x10, 0x81])
 })
 
+test('get_operation_property_count', () => {
+  const buf = Buffer.from('1081000302880105FF017201E704FFFFF856', 'hex')
+  const res = new EchonetLiteResponse(buf)
+  expect(res.get_operation_property_count()).toBe(1)
+
+  const buf_double = Buffer.from('1081000302880105FF017202E704FFFFF856E703FFF856', 'hex')
+  const res_double = new EchonetLiteResponse(buf_double)
+  expect(res_double.get_operation_property_count()).toBe(2)
+})
+
 test('get_properties', () => {
   // OPC: 1, [PDC: 4]
   const buf = Buffer.from('1081000302880105FF017201E704FFFFF856', 'hex')
@@ -74,6 +84,8 @@ test('get_property_parser', () => {
   const epc_buf = Buffer.from('E7', 'hex')
   const parser = res.get_property_parser(epc_buf)
   expect(parser).toBeInstanceOf(Function)
+  // 2nd times is the same because it's already cached.
+  expect(res.get_property_parser(epc_buf)).toEqual(parser)
 
   // SEE ALSO ./property-parser/02-88-E7.test.js
   // There is same test.
