@@ -45,7 +45,6 @@ class RL7023StickDIPS {
       this.callback = this.simple_response_callback
     }
     const timer = setTimeout(() => {
-      console.log('timeout')
       reject('Response timeout')
     }, this.time_limit)
 
