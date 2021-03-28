@@ -114,6 +114,32 @@ test('build sksendto command message', () => {
   expect(rl7023.build_sksendto_message(ipv6_addr, echonet_lite_request)).toEqual(expected_answer)
 })
 
+test('response timeout', async () => {
+  const callback = jest.fn()
+  const resolve = jest.fn()
+  const reject = jest.fn()
+  const sleep = (delay) => {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => { resolve() }, delay)
+    })
+  }
+  rl7023.time_limit = 500
+
+  rl7023._set_context(callback, resolve, reject)
+  rl7023.context.resolve()
+  expect(resolve).toHaveBeenCalled()
+  await sleep(1000)
+  expect(reject).not.toHaveBeenCalled()
+
+  resolve.mockClear()
+  reject.mockClear()
+
+  rl7023._set_context(callback, resolve, reject)
+  await sleep(1000)
+  expect(resolve).not.toHaveBeenCalled()
+  expect(reject).toHaveBeenCalled()
+})
+
 test('send SK(SET|SREG) command', async () => {
   await rl7023.sksetpwd('AAAAAAAAAAAAAAAAAABBBBBBBBBBCCCCCCCCCC')
   expect(rl7023.parser.tell).toHaveBeenCalled()

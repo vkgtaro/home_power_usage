@@ -9,6 +9,7 @@ const smart_meter_eoj = '028801'
 
 class RL7023StickDIPS {
   tid = 0
+  time_limit = 10*1000
 
   constructor(device_path) {
     this.device_path = device_path
@@ -43,9 +44,16 @@ class RL7023StickDIPS {
     } else {
       this.callback = this.simple_response_callback
     }
-    this.context.resolve = resolve
-    this.context.reject  = reject
+    const timer = setTimeout(() => {
+      console.log('timeout')
+      reject('Response timeout')
+    }, this.time_limit)
 
+    this.context.resolve = (content) => {
+      clearTimeout(timer)
+      resolve(content)
+    }
+    this.context.reject  = reject
   }
 
   send(message, callback) {
