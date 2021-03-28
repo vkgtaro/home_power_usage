@@ -61,6 +61,7 @@ class RL7023StickDIPS {
     return new Promise((resolve, reject) => {
       this._setContext(callback, resolve, reject, message)
 
+      debug(message.toString())
       this.port.write(message, (err) => {
         if (err) {
           reject(err)
