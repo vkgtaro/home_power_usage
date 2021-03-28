@@ -27,9 +27,6 @@ class FileCache {
 
     const lastModified = new Date(stats.mtime)
     const now = new Date()
-    console.log(now.getTime())
-    console.log(lastModified.getTime())
-    console.log(now.getTime() - lastModified.getTime())
     //           ↓ ms
     if (this.ttl * 1000 <= (now.getTime() - lastModified.getTime())) {
       return
