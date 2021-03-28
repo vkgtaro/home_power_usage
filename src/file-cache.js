@@ -3,43 +3,45 @@ const os = require('os')
 const path = require('path')
 
 class FileCache {
-  constructor(tmp_key, ttl=60*60*24) {
-    this.tmp_key = tmp_key
-    this.tmp_dir = path.join(os.tmpdir(), this.tmp_key)
+  constructor (tmpKey, ttl = 60 * 60 * 24) {
+    this.tmpKey = tmpKey
+    this.tmpDir = path.join(os.tmpdir(), this.tmpKey)
     this.ttl = ttl
 
-    if (!fs.existsSync(this.tmp_dir)) {
-      fs.mkdirSync(this.tmp_dir, (err, directory) => {
-        if (err) throw err;
+    if (!fs.existsSync(this.tmpDir)) {
+      fs.mkdirSync(this.tmpDir, (err, directory) => {
+        if (err) throw err
       })
     }
   }
 
-  get(key) {
-    const file_path = path.join(this.tmp_dir, key + '.json')
+  get (key) {
+    const filePath = path.join(this.tmpDir, key + '.json')
 
     let stats
     try {
-      stats = fs.statSync(file_path)
+      stats = fs.statSync(filePath)
     } catch (err) {
       return
     }
 
-    const last_modified = new Date(stats.mtime)
+    const lastModified = new Date(stats.mtime)
     const now = new Date()
+    console.log(now.getTime())
+    console.log(lastModified.getTime())
+    console.log(now.getTime() - lastModified.getTime())
     //           ↓ ms
-    if (this.ttl*1000 <= (now.getTime() - last_modified.getTime())) {
+    if (this.ttl * 1000 <= (now.getTime() - lastModified.getTime())) {
       return
     }
 
-    return JSON.parse(fs.readFileSync(file_path))
+    return JSON.parse(fs.readFileSync(filePath))
   }
 
-  set(key, load) {
-    const file_path = path.join(this.tmp_dir, key + '.json')
-    fs.writeFileSync(file_path, JSON.stringify(load))
+  set (key, load) {
+    const filePath = path.join(this.tmpDir, key + '.json')
+    fs.writeFileSync(filePath, JSON.stringify(load))
   }
-
 }
 
-module.exports = FileCache;
+module.exports = FileCache

@@ -12,4 +12,3 @@ test('parse', () => {
   expect(parser(Buffer.from('0D', 'hex'))).toBe(10000)
   expect(parser(Buffer.from('05', 'hex'))).toBe(undefined)
 })
-

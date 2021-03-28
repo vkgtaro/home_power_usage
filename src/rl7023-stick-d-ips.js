@@ -4,63 +4,62 @@ const EchonetLiteRequest = require('./echonet-lite/request')
 const EchonetLiteResponse = require('./echonet-lite/response')
 const SerialPort = require('serialport')
 const Readline = require('@serialport/parser-readline')
-const baud_rate = 115200
-const smart_meter_eoj = '028801'
+const BAUD_RATE = 115200
+const SMART_METER_EOJ = '028801'
 
 class RL7023StickDIPS {
-  tid = 0
-  time_limit = 30*1000
-
-  constructor(device_path) {
-    this.device_path = device_path
-    this._prepare_serialport()
+  constructor (devicePath, timeLimit = 30 * 1000, tid = 0) {
+    this.devicePath = devicePath
+    this._prepareSerialPort()
+    this.tid = tid
+    this.timeLimit = timeLimit
 
     // The following three functions should be handled as a set in the same context
     this.context = {
-      resolve:  undefined,
-      reject:   undefined,
+      resolve: undefined,
+      reject: undefined
     }
   }
 
-  _prepare_serialport() {
-    this.port = new SerialPort(this.device_path, {
-      baudRate: baud_rate
+  _prepareSerialPort () {
+    this.port = new SerialPort(this.devicePath, {
+      baudRate: BAUD_RATE
     })
 
-    this.parser = this.port.pipe(new Readline({ delimiter: '\r\n' }));
+    this.parser = this.port.pipe(new Readline({ delimiter: '\r\n' }))
     this.parser.on('data', (response) => {
       debug(response)
       this.callback(this.context, response.replace(/\r\n/, ''))
     })
   }
 
-  set_ipv6_addr(addr) {
-    this.ipv6_addr = addr
+  setIPv6Addr (addr) {
+    this.IPv6Addr = addr
   }
 
-  _set_context(callback, resolve, reject, message) {
+  _setContext (callback, resolve, reject, message) {
     if (callback && typeof callback === 'function') {
       this.callback = callback
     } else {
-      this.callback = this.simple_response_callback
+      this.callback = this.simpleResponseCallback
     }
     const timer = setTimeout(() => {
       reject('Response timeout:' + message)
-    }, this.time_limit)
+    }, this.timeLimit)
 
     this.context.resolve = (content) => {
       clearTimeout(timer)
       resolve(content)
     }
-    this.context.reject  = (content) => {
+    this.context.reject = (content) => {
       clearTimeout(timer)
       reject(content)
     }
   }
 
-  send(message, callback) {
+  send (message, callback) {
     return new Promise((resolve, reject) => {
-      this._set_context(callback, resolve, reject, message)
+      this._setContext(callback, resolve, reject, message)
 
       this.port.write(message, (err) => {
         if (err) {
@@ -70,11 +69,11 @@ class RL7023StickDIPS {
     })
   }
 
-  close() {
+  close () {
     this.port.close()
   }
 
-  simple_response_callback(context, res) {
+  simpleResponseCallback (context, res) {
     if (res.match(/^OK/)) {
       context.resolve(res)
     } else {
@@ -82,11 +81,11 @@ class RL7023StickDIPS {
     }
   }
 
-  simple_get_response_callback(context, res) {
+  simpleGetResponseCallback (context, res) {
     context.resolve(res.trim())
   }
 
-  pana_callback(context, res) {
+  panaCallback (context, res) {
     if (res.match(/^EVENT 24/)) {
       context.reject('PANA Connection Failed.')
     } else if (res.match(/^EVENT 25/)) {
@@ -94,11 +93,11 @@ class RL7023StickDIPS {
     }
   }
 
-  scan_callback(context, res) {
+  scanCallback (context, res) {
     if (res.match(/^EVENT 20/)) {
       context.device = {}
     } else if (res.match(/^\s{2}/)) {
-      const m = res.match(/^\s+([^\:]+)\:(.+)/)
+      const m = res.match(/^\s+([^:]+):(.+)/)
       if (m) {
         context.device[m[1]] = m[2]
       }
@@ -111,7 +110,7 @@ class RL7023StickDIPS {
     }
   }
 
-  erxudp_callback(context, res) {
+  erxudpCallback (context, res) {
     // Ignore responses other than EXRUDP.
     if (!res.match(/ERXUDP/)) {
       return
@@ -120,91 +119,71 @@ class RL7023StickDIPS {
     // Accoding to SKSTACK-IP spec P49, 8th part is data
     // ERXUDP <SENDER> <DEST> <RPORT> <LPORT> <SENDERLLA> <SECURED> <DATALEN> <DATA><CRLF>
     res.trim()
-    const erxudp_parts = res.split(' ')
-    if (erxudp_parts.length != 9) {
+    const erxudpParts = res.split(' ')
+    if (erxudpParts.length !== 9) {
       context.reject('lack of response data')
       return
     }
 
-    const data = erxudp_parts[8]
+    const data = erxudpParts[8]
     context.resolve(Buffer.from(data, 'hex'))
   }
 
-  build_message(template, ...args) {
+  buildMessage (template, ...args) {
     const message = (args.length > 0) ? util.format(template, ...args) : template
     return Buffer.from(message + '\r\n', 'utf8')
   }
 
-  build_sksendto_message(addr, el_req) {
-    const byte_num_hex = el_req.length.toString(16).padStart(4, '0')
-    const cmd_base = util.format('SKSENDTO 1 %s 0E1A 2 %s ', addr, byte_num_hex)
-    const cmd_base_buf = Buffer.from(cmd_base)
-    return Buffer.concat([cmd_base_buf, el_req])
+  buildSKsendtoMessage (addr, ELReq) {
+    const byteNumHex = ELReq.length.toString(16).padStart(4, '0')
+    const cmdBase = util.format('SKSENDTO 1 %s 0E1A 2 %s ', addr, byteNumHex)
+    const cmdBaseBuf = Buffer.from(cmdBase)
+    return Buffer.concat([cmdBaseBuf, ELReq])
   }
 
-  async sksetpwd(password) {
-    await this.send(this.build_message('SKSETPWD C %s', password))
+  async sksetpwd (password) {
+    await this.send(this.buildMessage('SKSETPWD C %s', password))
   }
 
-  async sksetrbid(id) {
-    await this.send(this.build_message('SKSETRBID %s', id))
+  async sksetrbid (id) {
+    await this.send(this.buildMessage('SKSETRBID %s', id))
   }
 
-  async sksreg_channel(channel) {
-    await this.send(this.build_message('SKSREG S2 %s', channel))
+  async sksregChannel (channel) {
+    await this.send(this.buildMessage('SKSREG S2 %s', channel))
   }
 
-  async sksreg_pan_id(pan_id) {
-    await this.send(this.build_message('SKSREG S3 %s', pan_id))
+  async sksregPanId (panId) {
+    await this.send(this.buildMessage('SKSREG S3 %s', panId))
   }
 
-  async skscan() {
-    return await this.send(this.build_message('SKSCAN 2 FFFFFFFF 6'), this.scan_callback)
+  async skscan () {
+    return await this.send(this.buildMessage('SKSCAN 2 FFFFFFFF 6'), this.scanCallback)
   }
 
-  async skll64(addr) {
-    return await this.send(this.build_message('SKLL64 %s', addr), this.simple_get_response_callback)
+  async skll64 (addr) {
+    return await this.send(this.buildMessage('SKLL64 %s', addr), this.simpleGetResponseCallback)
   }
 
-  async skjoin() {
-    return await this.send(this.build_message('SKJOIN %s', this.ipv6_addr), this.pana_callback)
+  async skjoin () {
+    return await this.send(this.buildMessage('SKJOIN %s', this.IPv6Addr), this.panaCallback)
   }
 
-  async sksendto(el_req) {
-    return await this.send(this.build_sksendto_message(this.ipv6_addr, el_req), this.erxudp_callback)
+  async sksendto (ELReq) {
+    return await this.send(this.buildSKsendtoMessage(this.IPv6Addr, ELReq), this.erxudpCallback)
   }
 
-  async request_echonet_lite(esv, content) {
+  async requestEchonetLite (esv, content) {
     this.tid++
-    const req = new EchonetLiteRequest(this.tid, smart_meter_eoj, esv)
-    req.set_request_content(content)
-    const raw_res = await this.sksendto(req.get_buf())
-    const res = new EchonetLiteResponse(raw_res)
-    if (res.get_esv_property().match(/Set_Res|Get_Res|SetGet_Res/)) {
+    const req = new EchonetLiteRequest(this.tid, SMART_METER_EOJ, esv)
+    req.setRequestContent(content)
+    const rawRes = await this.sksendto(req.getBuf())
+    const res = new EchonetLiteResponse(rawRes)
+    if (res.getEsvProperty().match(/Set_Res|Get_Res|SetGet_Res/)) {
       return res
     }
 
-    throw 'Failed to get.'
+    throw new Error('Failed to get.')
   }
 }
 module.exports = RL7023StickDIPS
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -1,4 +1,4 @@
-const esv_properties = {
+const ESV_PROPERTIES = {
   0x71: 'Set_Res',
   0x72: 'Get_Res',
   0x73: 'INFC',
@@ -8,13 +8,11 @@ const esv_properties = {
   0x51: 'SetC_SNA',
   0x52: 'GetC_SNA',
   0x53: 'INF_SNA',
-  0x5E: 'SetGet_SNA',
+  0x5E: 'SetGet_SNA'
 }
 
 class EconetLiteResponse {
-  property_parsers = {}
-
-  constructor(buf) {
+  constructor (buf) {
     this.buffer = buf
     this.ehd = buf.slice(0, 2)
     this.tid = buf.slice(2, 4)
@@ -24,23 +22,24 @@ class EconetLiteResponse {
     this.esv = this.edata.slice(6, 7)
     this.opc = this.edata.slice(7, 8)
     this.properties = this.edata.slice(8)
+    this.propertyParsers = {}
   }
 
-  get_operation_property_count() {
+  getOperationPropertyCount () {
     return this.opc.readUInt8()
   }
 
-  get_properties() {
-    const opc = this.get_operation_property_count()
+  getProperties () {
+    const opc = this.getOperationPropertyCount()
     const result = []
-    let offset = 0;
+    let offset = 0
     for (let i = 0; i < opc; i++) {
       const row = {}
-      row.epc = this.properties.slice(offset, offset+1).toString('hex').toUpperCase()
+      row.epc = this.properties.slice(offset, offset + 1).toString('hex').toUpperCase()
       offset++
-      row.pdc = this.properties.slice(offset, offset+1).readUInt8()
+      row.pdc = this.properties.slice(offset, offset + 1).readUInt8()
       offset++
-      row.edt = this.properties.slice(offset, offset+row.pdc)
+      row.edt = this.properties.slice(offset, offset + row.pdc)
 
       offset = offset + row.pdc
       result.push(row)
@@ -49,47 +48,46 @@ class EconetLiteResponse {
   }
 
   // returns this format [group_class_code]-[class_code]-[EPC]
-  get_object_property_name(epc_buf) {
-    const code_array = this.seoj.toString('hex').match(/.{1,2}/g)
+  getObjectPropertyName (epcBuf) {
+    const codeArray = this.seoj.toString('hex').match(/.{1,2}/g)
     // using EPC code instead of SEOJ instance code
-    code_array[2] = epc_buf.toString('hex').toUpperCase()
+    codeArray[2] = epcBuf.toString('hex').toUpperCase()
 
-    return code_array.join('-')
+    return codeArray.join('-')
   }
 
-  get_property_parser(epc_buf) {
-    const op_name = this.get_object_property_name(epc_buf)
-    if (op_name in this.property_parsers) {
-      return this.property_parsers[op_name]
+  getPropertyParser (epcBuf) {
+    const opName = this.getObjectPropertyName(epcBuf)
+    if (opName in this.propertyParsers) {
+      return this.propertyParsers[opName]
     }
 
-    const parser = require(`./property-parser/${op_name}`)
+    const parser = require(`./property-parser/${opName}`)
     return parser
   }
 
-  get_parsed_properties() {
-    const properties = this.get_properties()
+  getParsedProperties () {
+    const properties = this.getProperties()
     const result = []
     properties.forEach((property) => {
-      const parser = this.get_property_parser(property.epc)
+      const parser = this.getPropertyParser(property.epc)
       result.push(parser(property.edt))
     })
 
     return result
   }
 
-  get_esv_property() {
+  getEsvProperty () {
     const hex = this.esv.readUInt8()
-    if (hex in esv_properties) {
-      return esv_properties[hex]
+    if (hex in ESV_PROPERTIES) {
+      return ESV_PROPERTIES[hex]
     }
     return undefined
   }
 
-  convert_to_hex_array(buf) {
+  convertToHexArray (buf) {
     return buf.toString('hex').match(/.{1,2}/g).map(v => parseInt(v, 16))
   }
 }
 
-module.exports = EconetLiteResponse;
-
+module.exports = EconetLiteResponse

@@ -4,7 +4,7 @@ const parser = (buf) => {
 
   let offset = 2
   for (let i = 0; i < 48; i++) {
-    const total = buf.slice(offset, offset+4)
+    const total = buf.slice(offset, offset + 4)
     result.push(total.readUInt32BE())
     offset += 4
   }

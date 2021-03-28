@@ -5,4 +5,3 @@ test('parse', () => {
   expect(parser(Buffer.from('00000000', 'hex'))).toBe(0)
   expect(parser(Buffer.from('05F5E0FF', 'hex'))).toBe(99999999)
 })
-
