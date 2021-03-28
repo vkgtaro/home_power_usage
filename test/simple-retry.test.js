@@ -28,7 +28,6 @@ test('failed after the limit is exceeded', async () => {
   try {
     await retry(succeed_on_the_third_times, 2)
   } catch (err) {
-    console.log(err)
     expect(err).toEqual(new Error('The retry limit has been exceeded.'))
   }
 
