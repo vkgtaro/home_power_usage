@@ -72,7 +72,7 @@ const main = async (now, rl7023) => {
     const instantaneousPower = res.getParsedProperties()[0] / 1000
     console.log(instantaneousPower + 'kw')
 
-    insertData('power', now, { instantaneousPower: instantaneousPower }, { type: 'electricity_meter' })
+    insertData('power', now, { instantaneous_power: instantaneousPower }, { type: 'electricity_meter' })
     rl7023.close()
   } catch (error) {
     console.log(error)
