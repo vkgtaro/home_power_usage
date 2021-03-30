@@ -65,6 +65,12 @@ test('getObjectPropertyName', () => {
 
   const epcBuf = Buffer.from('E7', 'hex')
   expect(res.getObjectPropertyName(epcBuf)).toBe('02-88-E7')
+
+  const buf2 = Buffer.from('10810001027C0105FF016201C400', 'hex')
+  const res2 = new EchonetLiteResponse(buf2)
+
+  const epcBuf2 = Buffer.from('C4', 'hex')
+  expect(res2.getObjectPropertyName(epcBuf2)).toBe('02-7C-C4')
 })
 
 test('getPropertyParser', () => {

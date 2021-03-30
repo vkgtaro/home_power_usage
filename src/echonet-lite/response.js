@@ -51,9 +51,9 @@ class EconetLiteResponse {
   getObjectPropertyName (epcBuf) {
     const codeArray = this.seoj.toString('hex').match(/.{1,2}/g)
     // using EPC code instead of SEOJ instance code
-    codeArray[2] = epcBuf.toString('hex').toUpperCase()
+    codeArray[2] = epcBuf.toString('hex')
 
-    return codeArray.join('-')
+    return codeArray.map(x => x.toUpperCase()).join('-')
   }
 
   getPropertyParser (epcBuf) {
