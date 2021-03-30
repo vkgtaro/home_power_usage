@@ -91,7 +91,7 @@ test('erxudp callback', () => {
   context.reject.mockClear()
 
   rl7023.erxudpCallback(context, 'ERXUDP FE80:0000:0000:0000:021C:6400:03DD:6393 FE80:0000:0000:0000:1207:23FF:FEA0:77E3 0E1A 0E1A 001C640003DD6393 1 0012 1081000302880105FF017201E7040000001C')
-  expect(context.resolve).toHaveBeenCalledWith(Buffer.from('1081000302880105FF017201E7040000001C', 'hex'))
+  expect(context.resolve).toHaveBeenCalledWith(new EchonetLiteResponse(Buffer.from('1081000302880105FF017201E7040000001C', 'hex')))
 })
 
 test('build command message', () => {
@@ -185,10 +185,11 @@ test('SKJOIN', async () => {
 
 test('SKSENDTO', async () => {
   const ipv6Addr = 'FE80:0000:0000:0000:021C:6400:03DD:6393'
-  const EchonetLiteRequest = Buffer.from('1081000105FF010288016201E700', 'hex')
+  const reqBuf = Buffer.from('1081000105FF010288016201E700', 'hex')
+  const elResponse = new EchonetLiteResponse(Buffer.from('1081000302880105FF017201E704FFFFF856', 'hex'))
 
   rl7023.setIPv6Addr(ipv6Addr)
-  expect(await rl7023.sksendto(EchonetLiteRequest)).toEqual(Buffer.from('1081000302880105FF017201E704FFFFF856', 'hex'))
+  expect(await rl7023.sksendto(reqBuf)).toEqual(elResponse)
 })
 
 test('requesst_echonet_lite', async () => {

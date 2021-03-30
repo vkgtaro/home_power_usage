@@ -127,7 +127,11 @@ class RL7023StickDIPS {
     }
 
     const data = erxudpParts[8]
-    context.resolve(Buffer.from(data, 'hex'))
+    const ELRes = new EchonetLiteResponse(Buffer.from(data, 'hex'))
+    if (ELRes.getEsvProperty() === 'INFC') {
+      return
+    }
+    context.resolve(ELRes)
   }
 
   buildMessage (template, ...args) {
@@ -178,8 +182,7 @@ class RL7023StickDIPS {
     this.tid++
     const req = new EchonetLiteRequest(this.tid, SMART_METER_EOJ, esv)
     req.setRequestContent(content)
-    const rawRes = await this.sksendto(req.getBuf())
-    const res = new EchonetLiteResponse(rawRes)
+    const res = await this.sksendto(req.getBuf())
     if (res.getEsvProperty().match(/Set_Res|Get_Res|SetGet_Res/)) {
       return res
     }
