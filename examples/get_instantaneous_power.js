@@ -3,15 +3,10 @@ const retry = require('../src/simple-retry')
 const FileCache = require('../src/file-cache')
 const Influx = require('influx')
 
-// Bルート認証ID
-const BROUTE_ID = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
-// Bルート認証パスワード
-const BROUTE_PASSWORD = 'XXXXXXXXXXXX'
-// RL7023 Stick-D/IPS USB デバイス
-const DEVICE_PATH = '/dev/ttyUSB_power'
-
-// influx database name
-const INFLUX_DB_NAME = 'db_name'
+const BROUTE_ID = process.env.BROUTE_ID
+const BROUTE_PASSWORD = process.env.BROUTE_PASSWORD
+const DEVICE_PATH = process.env.DEVICE_PATH
+const INFLUX_DB_NAME = process.env.INFLUX_DB_NAME
 
 const influx = new Influx.InfluxDB({
   host: 'localhost',
@@ -66,9 +61,7 @@ const main = async (now, rl7023) => {
     rl7023.setIPv6Addr(device.ipv6Addr)
     await rl7023.skjoin()
 
-    const res = await retry(async () => {
-      return await rl7023.requestEchonetLite('Get', [{ epc: 0xE7 }])
-    }, 2)
+    const res = await rl7023.requestEchonetLite('Get', [{ epc: 0xE7 }])
     const instantaneousPower = res.getParsedProperties()[0] / 1000
     console.log(instantaneousPower + 'kw')
 
