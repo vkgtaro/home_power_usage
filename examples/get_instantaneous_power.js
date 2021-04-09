@@ -7,6 +7,7 @@ const BROUTE_ID = process.env.BROUTE_ID
 const BROUTE_PASSWORD = process.env.BROUTE_PASSWORD
 const DEVICE_PATH = process.env.DEVICE_PATH
 const INFLUX_DB_NAME = process.env.INFLUX_DB_NAME
+const INFLUX_MEASUREMENT = process.env.INFLUX_MEASUREMENT
 
 const influx = new Influx.InfluxDB({
   host: 'localhost',
@@ -65,7 +66,7 @@ const main = async (now, rl7023) => {
     const instantaneousPower = res.getParsedProperties()[0] / 1000
     console.log(instantaneousPower + 'kw')
 
-    insertData('power', now, { instantaneous_power: instantaneousPower }, { type: 'electricity_meter' })
+    insertData(INFLUX_MEASUREMENT, now, { instantaneous_power: instantaneousPower }, { type: 'electricity_meter' })
     rl7023.close()
   } catch (error) {
     console.log(error)
